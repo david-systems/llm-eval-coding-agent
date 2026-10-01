@@ -1,0 +1,55 @@
+{% extends "store/layout.html" %}
+{% from "_macros.html" import csrf_field, field_error with context %}
+{% block title %}Checkout · Northstar{% endblock %}
+{% block content %}
+<h1>Checkout</h1>
+{% if message %}<div class="flash flash-error" role="alert" data-testid="checkout-message">{{ message }}</div>{% endif %}
+
+<div class="checkout">
+  <form method="post" action="/checkout" class="card form" id="checkout-form">
+    {{ csrf_field() }}
+    <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
+    {% if not customer %}
+      <p class="muted">Checking out as a guest. <a href="/login?next=/checkout">Sign in</a> to use your account.</p>
+    {% endif %}
+    <h3>Contact &amp; shipping</h3>
+    {% for name, label in [("email", "Email"), ("first_name", "First name"), ("last_name", "Last name"),
+                           ("address_line1", "Address"), ("address_line2", "Apartment, suite (optional)"),
+                           ("city", "City"), ("state", "State"), ("postal_code", "Postal code")] %}
+      <label>{{ label }}
+        <input name="{{ name }}" value="{{ values.get(name, '') }}" {% if name != "address_line2" %}required{% endif %}
+               {% if name == "email" %}type="email"{% endif %}>
+        {{ field_error(errors, name) }}
+      </label>
+    {% endfor %}
+
+    <h3>Payment</h3>
+    <label>Card number
+      <input name="card_number" inputmode="numeric" autocomplete="off" required placeholder="4242 4242 4242 4242">
+      {{ field_error(errors, "card_number") }}
+    </label>
+    <p class="muted small">Test processor: 4242 4242 4242 4242 is approved; 4000 0000 0000 0002 is declined. No real payment is taken.</p>
+    <button type="submit" class="button">Place order</button>
+  </form>
+
+  <aside class="card">
+    <h3>Order summary</h3>
+    <ul class="summary-lines">
+      {% for line in cart.lines %}
+      <li>{{ line.quantity }} × {{ line.product.name }} <span>{{ money(line.line_total) }}</span>
+        {% if line.issue %}<div class="field-error">{{ line.issue }}</div>{% endif %}</li>
+      {% endfor %}
+    </ul>
+    {% with totals = cart.totals %}{% include "store/_totals.html" %}{% endwith %}
+    <p class="muted small">Final prices are those in effect when you place the order.</p>
+  </aside>
+</div>
+<script>
+  // Prevent accidental double submission; the idempotency key also guards the server side.
+  document.getElementById("checkout-form").addEventListener("submit", function (e) {
+    var button = this.querySelector("button[type=submit]");
+    if (button.disabled) { e.preventDefault(); return; }
+    button.disabled = true; button.textContent = "Placing order…";
+  });
+</script>
+{% endblock %}

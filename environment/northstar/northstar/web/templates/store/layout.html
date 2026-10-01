@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf_field with context %}
+{% block header %}
+<header class="site-header">
+  <div class="container header-row">
+    <a class="logo" href="/">Northstar <span>Outdoor Living</span></a>
+    <form class="search" action="/products" method="get">
+      <input type="search" name="q" placeholder="Search products" aria-label="Search products" value="{{ q or '' }}">
+    </form>
+    <nav class="account-nav">
+      {% if customer %}
+        <span class="muted">Hi, {{ customer.first_name }} ({{ customer.level.label }})</span>
+        <a href="/account/orders">Orders</a>
+        <form method="post" action="/logout" class="inline">{{ csrf_field() }}<button class="link">Sign out</button></form>
+      {% else %}
+        <a href="/login">Sign in</a>
+      {% endif %}
+      <a class="cart-link" href="/cart">Cart ({{ cart_count or 0 }})</a>
+    </nav>
+  </div>
+  <nav class="container category-nav">
+    <a href="/products">All products</a>
+    {% for category in nav_categories or [] %}<a href="/categories/{{ category.slug }}">{{ category.name }}</a>{% endfor %}
+  </nav>
+</header>
+{% endblock %}

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token(request) }}">
+  <title>{% block title %}Northstar Outdoor Living{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="{% block body_class %}store{% endblock %}">
+  {% block header %}{% endblock %}
+  <main class="container">
+    {% for category, message in pop_flashes(request) %}
+      <div class="flash flash-{{ category }}" role="status">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="container footer">Northstar Outdoor Living &middot; A fictional retailer for demonstration purposes.</footer>
+</body>
+</html>

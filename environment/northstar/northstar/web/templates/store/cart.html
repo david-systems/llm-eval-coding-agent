@@ -1,0 +1,62 @@
+{% extends "store/layout.html" %}
+{% from "_macros.html" import csrf_field with context %}
+{% block title %}Your cart · Northstar{% endblock %}
+{% block content %}
+<h1>Your cart</h1>
+{% if cart.is_empty %}
+  <p class="muted">Your cart is empty. <a href="/products">Continue shopping</a>.</p>
+{% else %}
+{% if cart.checking_out %}
+<div class="flash flash-info" role="status" data-testid="cart-checking-out">
+  Your order is being processed. This cart can't be changed until your payment is confirmed.
+  {% if pending_key %}<a href="/checkout/status/{{ pending_key }}">Check payment status</a>{% endif %}
+</div>
+{% endif %}
+<table class="table cart-table">
+  <thead><tr><th>Product</th><th>Price</th><th>Quantity</th><th class="num">Line total</th><th></th></tr></thead>
+  <tbody>
+  {% for line in cart.lines %}
+    <tr>
+      <td>
+        {% if line.product.is_active %}<a href="/products/{{ line.product.sku }}">{{ line.product.name }}</a>{% else %}{{ line.product.name }}{% endif %}
+        <div class="muted small">SKU {{ line.product.sku }}</div>
+        {% if line.issue %}<div class="field-error">{{ line.issue }}</div>{% endif %}
+      </td>
+      <td>{{ money(line.unit_price) }}</td>
+      <td>
+        {% if cart.checking_out %}
+          {{ line.quantity }}
+        {% else %}
+        <form method="post" action="/cart/update" class="inline">
+          {{ csrf_field() }}
+          <input type="hidden" name="product_id" value="{{ line.product.id }}">
+          <input type="number" name="quantity" value="{{ line.quantity }}" min="0" max="999" aria-label="Quantity for {{ line.product.name }}">
+          <button class="button small secondary" name="action" value="update">Update</button>
+          <button class="button small link danger" name="action" value="remove">Remove</button>
+        </form>
+        {% endif %}
+      </td>
+      <td class="num">{{ money(line.line_total) }}</td>
+      <td></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% if not cart.checking_out %}
+<div class="cart-summary">
+  {% with totals = cart.totals %}{% include "store/_totals.html" %}{% endwith %}
+  <p class="muted small">
+    {% if cart.level %}{{ cart.level.label }} pricing:{% else %}Guest checkout:{% endif %}
+    {% if cart.free_shipping_threshold == 0 %}shipping is always free.
+    {% else %}free shipping on merchandise of {{ money(cart.free_shipping_threshold) }} or more; otherwise $20.00.{% endif %}
+    Prices are confirmed at checkout.
+  </p>
+  {% if cart.has_issues %}
+    <p class="field-error">Some items can't be purchased as listed. Adjust them before checking out.</p>
+  {% endif %}
+  <a class="button" href="/checkout">Proceed to checkout</a>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

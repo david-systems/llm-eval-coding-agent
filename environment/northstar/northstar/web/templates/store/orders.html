@@ -1,0 +1,22 @@
+{% extends "store/layout.html" %}
+{% block title %}Your orders · Northstar{% endblock %}
+{% block content %}
+<h1>Your orders</h1>
+{% if orders %}
+<table class="table">
+  <thead><tr><th>Order</th><th>Date</th><th class="num">Items</th><th class="num">Total</th></tr></thead>
+  <tbody>
+  {% for order in orders %}
+    <tr>
+      <td><a href="/account/orders/{{ order.id }}">{{ order.number }}</a></td>
+      <td>{{ order.placed_at.strftime("%Y-%m-%d") }}</td>
+      <td class="num">{{ order.lines | sum(attribute='quantity') }}</td>
+      <td class="num">{{ money(order.total) }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="muted">You haven't placed any orders yet.</p>
+{% endif %}
+{% endblock %}

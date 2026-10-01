@@ -1,0 +1,39 @@
+{% extends "store/layout.html" %}
+{% from "_macros.html" import product_card with context %}
+{% block content %}
+{% if announcement %}
+<div class="announcement" data-testid="announcement">{{ announcement }}</div>
+{% endif %}
+
+<section class="hero">
+  <h1>Gear for the backyard, built to last</h1>
+  <p>Grills, outdoor kitchens, fire pits, and patio furniture from brands we trust.</p>
+  <a class="button" href="/products">Shop all products</a>
+</section>
+
+<section id="featured">
+  <h2>Featured</h2>
+  {% if featured %}
+  <div class="grid">{% for product in featured %}{{ product_card(product) }}{% endfor %}</div>
+  {% else %}<p class="muted">No featured products right now.</p>{% endif %}
+</section>
+
+<section id="new-arrivals">
+  <h2>New arrivals</h2>
+  {% if new_arrivals %}
+  <div class="grid">{% for product in new_arrivals %}{{ product_card(product) }}{% endfor %}</div>
+  {% else %}<p class="muted">Check back soon for new products.</p>{% endif %}
+</section>
+
+<section>
+  <h2>Shop by category</h2>
+  <div class="grid categories">
+    {% for category in nav_categories %}
+    <a class="card category-card" href="/categories/{{ category.slug }}">
+      <strong>{{ category.name }}</strong>
+      <span class="muted">{{ category.children | map(attribute='name') | join(', ') }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

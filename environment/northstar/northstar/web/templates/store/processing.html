@@ -1,0 +1,12 @@
+{% extends "store/layout.html" %}
+{% block title %}Confirming your payment · Northstar{% endblock %}
+{% block content %}
+{# Periodic reload only re-asks for the authoritative result; it never decides one. #}
+<meta http-equiv="refresh" content="5">
+<section class="card narrow" data-testid="payment-processing">
+  <h1>We're confirming your payment</h1>
+  <p>{{ message }}</p>
+  <p class="muted small">This page checks again automatically. You won't be charged twice, and there's no need to place the order again.</p>
+  <p><a class="button secondary" href="{{ request.url.path }}">Check now</a></p>
+</section>
+{% endblock %}

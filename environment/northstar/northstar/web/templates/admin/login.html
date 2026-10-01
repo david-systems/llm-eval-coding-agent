@@ -1,0 +1,15 @@
+{% extends "admin/layout.html" %}
+{% from "_macros.html" import csrf_field with context %}
+{% block content %}
+<section class="card narrow">
+  <h1>Administrator sign in</h1>
+  {% if error %}<div class="flash flash-error" role="alert">{{ error }}</div>{% endif %}
+  <form method="post" action="/admin/login" class="form">
+    {{ csrf_field() }}
+    <input type="hidden" name="next" value="{{ next }}">
+    <label>Username <input name="username" value="{{ username }}" required autofocus></label>
+    <label>Password <input type="password" name="password" required></label>
+    <button type="submit" class="button">Sign in</button>
+  </form>
+</section>
+{% endblock %}

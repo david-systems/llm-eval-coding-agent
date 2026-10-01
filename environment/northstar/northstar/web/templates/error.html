@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Northstar{% endblock %}
+{% block header %}
+<header class="site-header"><div class="container header-row"><a class="logo" href="/">Northstar <span>Outdoor Living</span></a></div></header>
+{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>{{ title }}</h1>
+  <p>{{ message }}</p>
+  <p><a href="/">Return to the homepage</a></p>
+</section>
+{% endblock %}

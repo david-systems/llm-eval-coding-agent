@@ -1,0 +1,56 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<h1>Dashboard</h1>
+<div class="stats">
+  <div class="card stat"><span class="muted">Products</span><strong>{{ product_count }}</strong></div>
+  <div class="card stat"><span class="muted">Customers</span><strong>{{ customer_count }}</strong></div>
+  <div class="card stat"><span class="muted">Completed orders</span><strong>{{ order_count }}</strong></div>
+  <div class="card stat"><span class="muted">Order revenue</span><strong>{{ money(revenue) }}</strong></div>
+</div>
+
+<section class="card">
+  <h2>Checkouts awaiting payment confirmation</h2>
+  {% if unresolved %}
+  <p class="muted small">These attempts are waiting for an authoritative result from the payment processor. The reconciler resolves them; no order exists until capture is confirmed.</p>
+  <table class="table" data-testid="unresolved-checkouts">
+    <thead><tr><th>Started</th><th>State</th><th>Customer</th><th>Payment reference</th><th class="num">Amount</th></tr></thead>
+    <tbody>
+    {% for attempt in unresolved %}
+      <tr><td>{{ attempt.created_at.strftime("%Y-%m-%d %H:%M") }}</td><td>{{ attempt.status.value }}</td>
+          <td>{{ attempt.email }}</td><td>{{ attempt.payment_reference }}</td><td class="num">{{ money(attempt.total) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">None. Every checkout has a confirmed outcome.</p>{% endif %}
+</section>
+
+<section class="card">
+  <h2>MAP warnings</h2>
+  {% if below_map %}
+  <p class="warning-text">These MAP-enforced products are priced below their minimum advertised price.</p>
+  <table class="table">
+    <thead><tr><th>SKU</th><th>Product</th><th class="num">MAP</th><th class="num">Selling price</th></tr></thead>
+    <tbody>
+    {% for product in below_map %}
+      <tr><td><a href="/admin/products/{{ product.id }}">{{ product.sku }}</a></td><td>{{ product.name }}</td>
+          <td class="num">{{ money(product.map_price) }}</td><td class="num">{{ money(product.price) }} {% include "admin/_map.html" %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No MAP-enforced products are priced below MAP.</p>{% endif %}
+</section>
+
+<section class="card">
+  <h2>Low stock (active, 3 or fewer)</h2>
+  {% if low_stock %}
+  <table class="table">
+    <thead><tr><th>SKU</th><th>Product</th><th class="num">On hand</th></tr></thead>
+    <tbody>
+    {% for product in low_stock %}
+      <tr><td><a href="/admin/products/{{ product.id }}">{{ product.sku }}</a></td><td>{{ product.name }}</td><td class="num">{{ product.inventory_qty }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">Nothing is running low.</p>{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "store/layout.html" %}
+{% block title %}Order confirmed · Northstar{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Thank you! Your order is confirmed.</h1>
+  <p>Order <strong data-testid="order-number">{{ order.number }}</strong> placed {{ order.placed_at.strftime("%B %-d, %Y") }}.
+     A confirmation has been recorded for {{ order.email }}.</p>
+  {% include "store/_order_detail.html" %}
+  <p><a class="button" href="/products">Continue shopping</a>{% if customer %} <a href="/account/orders">View your orders</a>{% endif %}</p>
+</section>
+{% endblock %}

@@ -1,0 +1,6 @@
+<table class="totals">
+  <tr><th>Merchandise subtotal</th><td data-testid="subtotal">{{ money(totals.subtotal) }}</td></tr>
+  <tr><th>Shipping</th><td data-testid="shipping">{% if totals.shipping == 0 %}FREE{% else %}{{ money(totals.shipping) }}{% endif %}</td></tr>
+  <tr><th>Sales tax (8.25%)</th><td data-testid="tax">{{ money(totals.tax) }}</td></tr>
+  <tr class="grand"><th>Total</th><td data-testid="total">{{ money(totals.total) }}</td></tr>
+</table>

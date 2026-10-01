@@ -1,0 +1,70 @@
+{% extends "admin/layout.html" %}
+{% from "_macros.html" import csrf_field, field_error with context %}
+{% block content %}
+<div class="breadcrumbs"><a href="/admin/products">Products</a> › {{ product.sku if product else "New product" }}</div>
+<h1>{% if product %}Edit {{ product.sku }}{% else %}New product{% endif %}</h1>
+
+{% if product and product.is_below_map %}
+<div class="flash flash-warning" role="alert" data-testid="map-warning">
+  MAP warning: the selling price {{ money(product.price) }} is below this product's enforced MAP of {{ money(product.map_price) }}.
+  The price is allowed, but it may violate the manufacturer's advertising policy.
+</div>
+{% endif %}
+
+<form method="post" class="card form grid-form" id="product-form">
+  {{ csrf_field() }}
+  {% if product %}<input type="hidden" name="version" value="{{ values.get('version', product.version) }}">{% endif %}
+
+  <label>SKU
+    {% if product %}<input value="{{ product.sku }}" disabled> <span class="muted small">SKU is the product's permanent identity.</span>
+    {% else %}<input name="sku" value="{{ values.get('sku', '') }}" required>{% endif %}
+    {{ field_error(errors, "sku") }}
+  </label>
+  <label>Name <input name="name" value="{{ values.get('name', '') }}" required>{{ field_error(errors, "name") }}</label>
+  <label class="wide">Description <textarea name="description" rows="3">{{ values.get('description', '') }}</textarea></label>
+  <label>Brand
+    <select name="brand_id" required>
+      <option value="">Choose…</option>
+      {% for brand in brands %}<option value="{{ brand.id }}" {% if values.get('brand_id') == brand.id|string %}selected{% endif %}>{{ brand.name }}</option>{% endfor %}
+    </select>{{ field_error(errors, "brand_id") }}
+  </label>
+  <label>Category
+    <select name="category_id" required>
+      <option value="">Choose…</option>
+      {% for id, label in categories %}<option value="{{ id }}" {% if values.get('category_id') == id|string %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>{{ field_error(errors, "category_id") }}
+  </label>
+
+  <fieldset class="wide">
+    <legend>Pricing</legend>
+    <label>MSRP <input name="msrp" inputmode="decimal" value="{{ values.get('msrp', '') }}" required>{{ field_error(errors, "msrp") }}</label>
+    <label>MAP <input name="map_price" id="map_price" inputmode="decimal" value="{{ values.get('map_price', '') }}">{{ field_error(errors, "map_price") }}</label>
+    <label class="check"><input type="checkbox" name="map_enforced" id="map_enforced" {% if values.get('map_enforced') == 'on' %}checked{% endif %}> MAP enforced</label>
+    <label>Selling price <input name="price" id="price" inputmode="decimal" value="{{ values.get('price', '') }}" required>{{ field_error(errors, "price") }}</label>
+    <label>Cost <input name="cost" inputmode="decimal" value="{{ values.get('cost', '') }}" required>{{ field_error(errors, "cost") }}</label>
+    <p class="warning-text" id="map-live-warning" hidden>Selling price is below the enforced MAP. You can still save.</p>
+  </fieldset>
+
+  <label>Inventory quantity <input name="inventory_qty" type="number" min="0" value="{{ values.get('inventory_qty', '0') }}" required>{{ field_error(errors, "inventory_qty") }}</label>
+  <fieldset class="wide flags">
+    <legend>Status</legend>
+    <label class="check"><input type="checkbox" name="is_active" {% if values.get('is_active') == 'on' %}checked{% endif %}> Active (purchasable)</label>
+    <label class="check"><input type="checkbox" name="is_featured" {% if values.get('is_featured') == 'on' %}checked{% endif %}> Featured on homepage</label>
+    <label class="check"><input type="checkbox" name="is_new" {% if values.get('is_new') == 'on' %}checked{% endif %}> Marked as new</label>
+  </fieldset>
+  <div class="wide"><button type="submit" class="button">{% if product %}Save changes{% else %}Create product{% endif %}</button></div>
+</form>
+<script>
+  // Live MAP hint while editing; the server-side warning is authoritative.
+  (function () {
+    var price = document.getElementById("price"), map = document.getElementById("map_price"),
+        enforced = document.getElementById("map_enforced"), note = document.getElementById("map-live-warning");
+    function check() {
+      var p = parseFloat(price.value), m = parseFloat(map.value);
+      note.hidden = !(enforced.checked && !isNaN(p) && !isNaN(m) && p < m);
+    }
+    [price, map, enforced].forEach(function (el) { el.addEventListener("input", check); el.addEventListener("change", check); });
+    check();
+  })();
+</script>
+{% endblock %}

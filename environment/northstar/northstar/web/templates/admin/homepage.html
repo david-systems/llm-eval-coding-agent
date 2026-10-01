@@ -1,0 +1,50 @@
+{% extends "admin/layout.html" %}
+{% from "_macros.html" import csrf_field, field_error with context %}
+{% macro unset(product, flag, label) -%}
+<form method="post" action="/admin/products/{{ product.id }}/flag" class="inline">
+  {{ csrf_field() }}
+  <input type="hidden" name="flag" value="{{ flag }}"><input type="hidden" name="value" value="false">
+  <input type="hidden" name="next" value="/admin/homepage">
+  <button class="button small link danger">{{ label }}</button>
+</form>
+{%- endmacro %}
+{% block content %}
+<h1>Homepage content</h1>
+
+<section class="card">
+  <h2>Announcement banner</h2>
+  <form method="post" action="/admin/homepage" class="form">
+    {{ csrf_field() }}
+    <label>Announcement text
+      <textarea name="announcement_text" rows="2" maxlength="500">{{ values.announcement_text }}</textarea>
+      {{ field_error(errors, "announcement_text") }}
+    </label>
+    <label class="check"><input type="checkbox" name="announcement_active" {% if values.announcement_active %}checked{% endif %}> Show on homepage</label>
+    <button type="submit" class="button">Save announcement</button>
+  </form>
+</section>
+
+<div class="two-col">
+  <section class="card">
+    <h2>Featured products</h2>
+    <p class="muted small">Mark products as featured from the <a href="/admin/products">product list</a> or product editor.</p>
+    <ul class="plain">
+      {% for product in featured %}
+      <li><a href="/admin/products/{{ product.id }}">{{ product.sku }}</a> {{ product.name }} {{ unset(product, "is_featured", "Unfeature") }}</li>
+      {% else %}<li class="muted">None.</li>{% endfor %}
+    </ul>
+  </section>
+  <section class="card">
+    <h2>New products</h2>
+    <ul class="plain">
+      {% for product in new_arrivals %}
+      <li><a href="/admin/products/{{ product.id }}">{{ product.sku }}</a> {{ product.name }} {{ unset(product, "is_new", "Unmark new") }}</li>
+      {% else %}<li class="muted">None.</li>{% endfor %}
+    </ul>
+  </section>
+</div>
+{% if inactive_flagged %}
+<p class="muted small">Inactive products are never shown on the storefront, even when flagged:
+  {% for product in inactive_flagged %}<a href="/admin/products/{{ product.id }}">{{ product.sku }}</a>{% if not loop.last %}, {% endif %}{% endfor %}.</p>
+{% endif %}
+{% endblock %}

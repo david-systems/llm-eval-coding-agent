@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf_field with context %}
+{% block title %}Admin · Northstar{% endblock %}
+{% block body_class %}admin{% endblock %}
+{% block header %}
+<header class="site-header admin-header">
+  <div class="container header-row">
+    <a class="logo" href="/admin">Northstar <span>Admin</span></a>
+    {% if admin_nav %}
+    <nav class="admin-nav">
+      <a href="/admin/products">Products</a>
+      <a href="/admin/homepage">Homepage</a>
+      <a href="/admin/customers">Customers</a>
+      <a href="/admin/orders">Orders</a>
+      <a href="/" target="_blank">View store</a>
+      <form method="post" action="/admin/logout" class="inline">{{ csrf_field() }}<button class="link">Sign out</button></form>
+    </nav>
+    {% endif %}
+  </div>
+</header>
+{% endblock %}

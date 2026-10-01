@@ -1,0 +1,42 @@
+{% extends "store/layout.html" %}
+{% from "_macros.html" import product_card with context %}
+{% block title %}{{ heading }} · Northstar{% endblock %}
+{% block content %}
+<div class="breadcrumbs">
+  <a href="/">Home</a> ›
+  {% if category and category.parent %}<a href="/categories/{{ category.parent.slug }}">{{ category.parent.name }}</a> ›{% endif %}
+  {{ heading }}
+</div>
+<h1>{{ heading }}</h1>
+
+<div class="browse">
+  <aside class="filters">
+    {% if category %}
+      {% set top = category.parent or category %}
+      <h4>{{ top.name }}</h4>
+      <ul>
+        <li><a href="/categories/{{ top.slug }}" {% if category.id == top.id %}class="active"{% endif %}>All {{ top.name }}</a></li>
+        {% for child in top.children %}
+        <li><a href="/categories/{{ child.slug }}" {% if category.id == child.id %}class="active"{% endif %}>{{ child.name }}</a></li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <h4>Brand</h4>
+    <ul>
+      {% set base = request.url.path %}
+      <li><a href="{{ base }}{% if q %}?q={{ q | urlencode }}{% endif %}" {% if not brand %}class="active"{% endif %}>All brands</a></li>
+      {% for b in brands %}
+      <li><a href="{{ base }}?brand={{ b.slug }}{% if q %}&q={{ q | urlencode }}{% endif %}" {% if brand == b.slug %}class="active"{% endif %}>{{ b.name }}</a></li>
+      {% endfor %}
+    </ul>
+  </aside>
+  <section>
+    {% if q %}<p class="muted">Results for “{{ q }}”</p>{% endif %}
+    {% if products %}
+    <div class="grid">{% for product in products %}{{ product_card(product) }}{% endfor %}</div>
+    {% else %}
+    <p class="muted">No products match.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

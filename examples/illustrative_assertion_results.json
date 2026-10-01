@@ -1,0 +1,51 @@
+{
+  "_notice": "ILLUSTRATIVE ONLY. This file is NOT part of the held-out evaluation. The scenario, IDs, product, prices, and observed values are invented for explanation and do not correspond to any real grader scenario or assertion. The schema is simplified.",
+  "scenario": {
+    "scenario_id": "EXAMPLE-S01",
+    "name": "Percentage-off-product promotion reaches a completed order",
+    "setup": "A fictional product 'EXAMPLE-LANTERN' priced at $80.00 and an automatic 25% Percentage Off Product promotion targeting it. A guest buys one unit.",
+    "requirements": [
+      {
+        "source": "candidate/TASK.md - 1. Percentage Off Product",
+        "text": "Reduce each qualifying product unit by the configured percentage. The discount operates at the individual-unit level."
+      },
+      {
+        "source": "candidate/TASK.md - Tax, Shipping, and Rounding",
+        "text": "Tax is calculated on taxable merchandise actually paid after promotion discounts."
+      }
+    ]
+  },
+  "assertions": [
+    {
+      "assertion_id": "EXAMPLE-S01-MERCHANDISE",
+      "description": "Discounted merchandise subtotal is correct",
+      "status": "PASS",
+      "expected": { "merchandise_after_promotions": "60.00" },
+      "observed": { "merchandise_after_promotions": "60.00" },
+      "evidence": "Completed-order read and payment-processor capture agree."
+    },
+    {
+      "assertion_id": "EXAMPLE-S01-TAX",
+      "description": "Tax is calculated on the post-discount merchandise",
+      "status": "FAIL",
+      "failure_category": "TAX",
+      "expected": { "tax": "4.95" },
+      "observed": { "tax": "6.60" },
+      "message": "Tax matches 8.25% of the pre-discount price ($80.00), not of the merchandise actually paid ($60.00)."
+    },
+    {
+      "assertion_id": "EXAMPLE-S02-CHECKOUT_REVALIDATION",
+      "description": "Checkout re-presents changed terms when the promotion is edited mid-checkout",
+      "status": "BLOCKED",
+      "blocker": "The promotion could not be created through the administration contract, so the checkout behavior this check targets was never reached.",
+      "note": "BLOCKED is reported separately from FAIL so that one root failure does not appear as many downstream failures."
+    },
+    {
+      "assertion_id": "EXAMPLE-S03-PAYMENT_CONSISTENCY",
+      "description": "The amount captured by the payment processor equals the order total",
+      "status": "ERROR",
+      "message": "Evaluator infrastructure could not reach its own payment-processor records.",
+      "note": "ERROR is an evaluator condition. It is never counted against the candidate."
+    }
+  ]
+}

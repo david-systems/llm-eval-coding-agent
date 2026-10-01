@@ -1,0 +1,1 @@
+{% if product.is_below_map %}<span class="badge badge-warning" data-testid="below-map-badge" title="Selling price {{ money(product.price) }} is below enforced MAP {{ money(product.map_price) }}">Below MAP</span>{% endif %}

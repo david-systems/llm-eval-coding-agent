@@ -1,0 +1,10 @@
+{% extends "store/layout.html" %}
+{% block title %}Order {{ order.number }} · Northstar{% endblock %}
+{% block content %}
+<div class="breadcrumbs"><a href="/account/orders">Your orders</a> › {{ order.number }}</div>
+<section class="card">
+  <h1>Order {{ order.number }}</h1>
+  <p class="muted">Placed {{ order.placed_at.strftime("%B %-d, %Y") }} · Completed</p>
+  {% include "store/_order_detail.html" %}
+</section>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "admin/layout.html" %}
+{% from "_macros.html" import csrf_field with context %}
+{% macro toggle(product, flag, on, label) -%}
+<form method="post" action="/admin/products/{{ product.id }}/flag" class="inline">
+  {{ csrf_field() }}
+  <input type="hidden" name="flag" value="{{ flag }}">
+  <input type="hidden" name="value" value="{{ 'false' if on else 'true' }}">
+  <input type="hidden" name="next" value="{{ request.url.path }}{% if request.url.query %}?{{ request.url.query }}{% endif %}">
+  <button class="chip {{ 'chip-on' if on else '' }}" title="Toggle {{ label }}">{{ label }}</button>
+</form>
+{%- endmacro %}
+{% block content %}
+<div class="page-head">
+  <h1>Products</h1>
+  <a class="button" href="/admin/products/new">New product</a>
+</div>
+<form method="get" class="toolbar">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search SKU or name">
+  <label><input type="checkbox" name="below_map" value="true" {% if below_map %}checked{% endif %}> Below MAP only</label>
+  <button class="button secondary">Filter</button>
+</form>
+<table class="table">
+  <thead><tr><th>SKU</th><th>Name</th><th>Brand</th><th class="num">MAP</th><th class="num">Price</th><th class="num">Cost</th><th class="num">Qty</th><th>Flags</th></tr></thead>
+  <tbody>
+  {% for product in products %}
+    <tr class="{{ 'inactive' if not product.is_active else '' }}">
+      <td><a href="/admin/products/{{ product.id }}">{{ product.sku }}</a></td>
+      <td>{{ product.name }}</td>
+      <td>{{ product.brand.name }}</td>
+      <td class="num">{% if product.map_price is not none %}{{ money(product.map_price) }}{% if product.map_enforced %}<span class="muted small"> enf.</span>{% endif %}{% else %}—{% endif %}</td>
+      <td class="num">{{ money(product.price) }} {% include "admin/_map.html" %}</td>
+      <td class="num">{{ money(product.cost) }}</td>
+      <td class="num">{{ product.inventory_qty }}</td>
+      <td class="flags">
+        {{ toggle(product, "is_active", product.is_active, "Active") }}
+        {{ toggle(product, "is_featured", product.is_featured, "Featured") }}
+        {{ toggle(product, "is_new", product.is_new, "New") }}
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="8" class="muted">No products found.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

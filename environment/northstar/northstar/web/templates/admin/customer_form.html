@@ -1,0 +1,37 @@
+{% extends "admin/layout.html" %}
+{% from "_macros.html" import csrf_field, field_error with context %}
+{% block content %}
+<div class="breadcrumbs"><a href="/admin/customers">Customers</a> › {{ customer.full_name if customer else "New customer" }}</div>
+<h1>{% if customer %}{{ customer.full_name }}{% else %}New customer{% endif %}</h1>
+
+<form method="post" class="card form grid-form">
+  {{ csrf_field() }}
+  <label>Email <input type="email" name="email" value="{{ values.get('email', '') }}" required>{{ field_error(errors, "email") }}</label>
+  <label>Customer level
+    <select name="level">
+      {% for level in levels %}<option value="{{ level.value }}" {% if values.get('level') == level.value %}selected{% endif %}>{{ level.label }}</option>{% endfor %}
+    </select>{{ field_error(errors, "level") }}
+  </label>
+  <label>First name <input name="first_name" value="{{ values.get('first_name', '') }}" required>{{ field_error(errors, "first_name") }}</label>
+  <label>Last name <input name="last_name" value="{{ values.get('last_name', '') }}" required>{{ field_error(errors, "last_name") }}</label>
+  <label>{% if customer %}New password (leave blank to keep){% else %}Password{% endif %}
+    <input type="password" name="password" autocomplete="new-password" {% if not customer %}required{% endif %}>{{ field_error(errors, "password") }}
+  </label>
+  <label>Phone <input name="phone" value="{{ values.get('phone', '') }}"></label>
+  <label>Address <input name="address_line1" value="{{ values.get('address_line1', '') }}"></label>
+  <label>Address line 2 <input name="address_line2" value="{{ values.get('address_line2', '') }}"></label>
+  <label>City <input name="city" value="{{ values.get('city', '') }}"></label>
+  <label>State <input name="state" value="{{ values.get('state', '') }}"></label>
+  <label>Postal code <input name="postal_code" value="{{ values.get('postal_code', '') }}"></label>
+  <div class="wide"><button type="submit" class="button">{% if customer %}Save customer{% else %}Create customer{% endif %}</button></div>
+</form>
+
+{% if customer %}
+<section class="card">
+  <h2>Recent orders</h2>
+  {% if recent_orders %}
+  <ul class="plain">{% for order in recent_orders %}<li><a href="/admin/orders/{{ order.id }}">{{ order.number }}</a> · {{ order.placed_at.strftime("%Y-%m-%d") }} · {{ money(order.total) }}</li>{% endfor %}</ul>
+  {% else %}<p class="muted">No orders yet.</p>{% endif %}
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% macro csrf_field() -%}
+<input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+{%- endmacro %}
+
+{% macro field_error(errors, name) -%}
+{% if errors and errors.get(name) %}<span class="field-error">{{ errors[name] }}</span>{% endif %}
+{%- endmacro %}
+
+{% macro stock_badge(product) -%}
+{% if product.in_stock %}<span class="badge badge-ok">In Stock</span>{% else %}<span class="badge badge-muted">Out of Stock</span>{% endif %}
+{%- endmacro %}
+
+{% macro product_card(product) -%}
+<article class="card product-card">
+  <div class="product-meta">{{ product.brand.name }}{% if product.is_new %} <span class="badge badge-new">New</span>{% endif %}</div>
+  <h3><a href="/products/{{ product.sku }}">{{ product.name }}</a></h3>
+  <div class="price">{{ money(product.price) }}</div>
+  {{ stock_badge(product) }}
+</article>
+{%- endmacro %}

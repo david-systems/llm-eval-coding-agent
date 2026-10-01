@@ -1,0 +1,26 @@
+{% extends "store/layout.html" %}
+{% from "_macros.html" import csrf_field, stock_badge with context %}
+{% block title %}{{ product.name }} · Northstar{% endblock %}
+{% block content %}
+<div class="breadcrumbs">
+  <a href="/">Home</a> ›
+  {% if product.category.parent %}<a href="/categories/{{ product.category.parent.slug }}">{{ product.category.parent.name }}</a> ›{% endif %}
+  <a href="/categories/{{ product.category.slug }}">{{ product.category.name }}</a>
+</div>
+<article class="product-detail card">
+  <div class="product-meta">{{ product.brand.name }} · SKU {{ product.sku }}{% if product.is_new %} <span class="badge badge-new">New</span>{% endif %}</div>
+  <h1>{{ product.name }}</h1>
+  <div class="price large">{{ money(product.price) }}</div>
+  {% if product.msrp > product.price %}<div class="muted">MSRP <s>{{ money(product.msrp) }}</s></div>{% endif %}
+  <p>{{ stock_badge(product) }}</p>
+  <p class="description">{{ product.description }}</p>
+
+  <form method="post" action="/cart/add" class="add-to-cart">
+    {{ csrf_field() }}
+    <input type="hidden" name="sku" value="{{ product.sku }}">
+    <label>Quantity <input type="number" name="quantity" value="1" min="1" max="999" required></label>
+    <button type="submit" class="button">Add to cart</button>
+  </form>
+  {% if not product.in_stock %}<p class="muted">This item is currently out of stock. You may add it to your cart, but checkout requires available inventory.</p>{% endif %}
+</article>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<h1>Orders</h1>
+<form method="get" class="toolbar">
+  <input type="search" name="q" value="{{ q }}" placeholder="Order number, name, or email">
+  <button class="button secondary">Search</button>
+</form>
+<table class="table">
+  <thead><tr><th>Order</th><th>Placed</th><th>Customer</th><th>Level</th><th class="num">Subtotal</th><th class="num">Shipping</th><th class="num">Tax</th><th class="num">Total</th></tr></thead>
+  <tbody>
+  {% for order in orders %}
+    <tr>
+      <td><a href="/admin/orders/{{ order.id }}">{{ order.number }}</a></td>
+      <td>{{ order.placed_at.strftime("%Y-%m-%d %H:%M") }}</td>
+      <td>{{ order.customer_name }}<div class="muted small">{{ order.email }}</div></td>
+      <td>{{ order.customer_level.label if order.customer_level else "Guest" }}</td>
+      <td class="num">{{ money(order.subtotal) }}</td>
+      <td class="num">{{ money(order.shipping) }}</td>
+      <td class="num">{{ money(order.tax) }}</td>
+      <td class="num">{{ money(order.total) }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="8" class="muted">No orders found.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

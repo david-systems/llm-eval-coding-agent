@@ -1,0 +1,26 @@
+{% extends "admin/layout.html" %}
+{% block content %}
+<div class="page-head">
+  <h1>Customers</h1>
+  <a class="button" href="/admin/customers/new">New customer</a>
+</div>
+<form method="get" class="toolbar">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search name or email">
+  <button class="button secondary">Search</button>
+</form>
+<table class="table">
+  <thead><tr><th>Name</th><th>Email</th><th>Level</th><th>Location</th></tr></thead>
+  <tbody>
+  {% for customer in customers %}
+    <tr>
+      <td><a href="/admin/customers/{{ customer.id }}">{{ customer.full_name }}</a></td>
+      <td>{{ customer.email }}</td>
+      <td><span class="badge level-{{ customer.level.value }}">{{ customer.level.label }}</span></td>
+      <td>{{ customer.city }}{% if customer.state %}, {{ customer.state }}{% endif %}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="4" class="muted">No customers found.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

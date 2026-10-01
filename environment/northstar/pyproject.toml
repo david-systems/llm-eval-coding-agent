@@ -1,0 +1,41 @@
+[project]
+name = "northstar"
+version = "1.0.0"
+description = "Northstar Outdoor Living commerce application"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "jinja2",
+    "python-multipart",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.1",
+    "alembic",
+    "itsdangerous",
+    "httpx",
+]
+
+# The Docker images install from the pinned files in requirements/ instead:
+# Dockerfile -> northstar.txt, Dockerfile.fakepay -> fakepay.txt, Dockerfile.test -> test.txt.
+[project.optional-dependencies]
+# Runtime dependencies of the separate FakePay service (the base dependencies above are Northstar's).
+fakepay = [
+    "fastapi",
+    "uvicorn",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.1",
+]
+# Everything the test suite needs: it runs FakePay in-process alongside Northstar.
+test = ["pytest", "northstar[fakepay]"]
+
+[tool.setuptools.packages.find]
+include = ["northstar*", "fakepay*"]
+
+[tool.setuptools.package-data]
+northstar = ["web/templates/**/*.html", "web/static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+# Third-party notice from Starlette's TestClient about its httpx dependency.
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient` is deprecated"]

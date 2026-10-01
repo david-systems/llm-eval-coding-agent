@@ -1,0 +1,19 @@
+<table class="table">
+  <thead><tr><th>Item</th><th>SKU</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Line total</th></tr></thead>
+  <tbody>
+  {% for line in order.lines %}
+    <tr>
+      <td>{{ line.product_name }} <div class="muted small">{{ line.brand_name }}</div></td>
+      <td>{{ line.sku }}</td>
+      <td class="num">{{ line.quantity }}</td>
+      <td class="num">{{ money(line.unit_price) }}</td>
+      <td class="num">{{ money(line.line_total) }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% with totals = order %}{% include "store/_totals.html" %}{% endwith %}
+<div class="order-meta">
+  <div><strong>Ship to</strong><br>{{ order.customer_name }}<br>{{ order.address_line1 }}{% if order.address_line2 %}<br>{{ order.address_line2 }}{% endif %}<br>{{ order.city }}, {{ order.state }} {{ order.postal_code }}</div>
+  <div><strong>Payment</strong><br>{% if order.card_last4 %}Card ending {{ order.card_last4 }}<br>{% endif %}<span class="muted small">{{ order.payment_reference }}</span></div>
+</div>
