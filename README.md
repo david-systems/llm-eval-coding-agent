@@ -11,8 +11,8 @@ An AI coding agent is given an unfamiliar e-commerce codebase and a written busi
 | **What is being evaluated** | AI coding agents working on a realistic existing codebase |
 | **The task** | Add an 11-type promotion system (discounts, coupon codes, stacking rules, redemption limits) to a commerce app while preserving checkout, payments, and existing behavior |
 | **How it is graded** | A held-out evaluator with 17 grader families and 335 deterministic assertions, run against the agent's finished, sealed submission |
-| **Headline result** | GPT-5.6 Sol High (via Codex) passed **334 of 335** assertions. An earlier GPT-5.6 Luna run passed 168, with 104 failures and 63 blocked. |
-| **What it taught us** | For strong coding agents, this task is approaching saturation. The next evaluation targets harder capabilities: long-horizon, multi-source, organizational reasoning. |
+| **Headline result** | Across four trials, Claude Sonnet 5.5 High (via Claude Code) passed **all 335** assertions and GPT-5.6 Sol High (via Codex) passed **334**. GPT-5.6 Luna (via Codex) and Claude Haiku 4.5 High (via Claude Code) preserved the existing application but passed 168 and 58, with much of the evaluation blocked behind unmet prerequisites. |
+| **What it taught us** | The evaluation separates substantially different capability levels, and it is saturated for the strongest candidates tested. The next evaluation targets harder capabilities: long-horizon, multi-source, organizational reasoning. |
 | **My role** | Evaluation designer: I defined the capability, requirements, grading methodology, and experiments. I directed AI coding agents that implemented much of the code, and I validated the evaluator and analyzed the results. |
 
 ## What the Agent Has to Do
@@ -52,32 +52,38 @@ The evaluator checks **what the application does**, not how the code is written.
 
 ## Results
 
-Two trials were graded against the same evaluator, task, and frozen baseline.
+Four trials were graded against the same task, admin API contract, grader families, and frozen baseline.
 
-| | Trial 001 | Trial 002 |
-|---|---|---|
-| Agent / model | Codex / GPT-5.6 Luna | Codex / GPT-5.6 Sol High |
-| **PASS** | 168 | **334** |
-| **FAIL** | 104 | **1** |
-| **BLOCKED** | 63 | 0 |
-| **ERROR** | 0 | 0 |
-| Total assertions | 335 | 335 |
-| Existing behavior preserved (baseline regression) | 26 / 26 | 26 / 26 |
-| Grader families fully passing | 1 of 17 | 16 of 17 |
+| | Trial 001 | Trial 002 | Trial 003 | Trial 004 |
+|---|---|---|---|---|
+| Agent / model | Codex / GPT-5.6 Luna | Codex / GPT-5.6 Sol High | Claude Code / Claude Sonnet 5.5 High | Claude Code / Claude Haiku 4.5 High |
+| **PASS** | 168 | **334** | **335** | 58 |
+| **FAIL** | 104 | **1** | **0** | 64 |
+| **BLOCKED** | 63 | 0 | 0 | 213 |
+| **ERROR** | 0 | 0 | 0 | 0 |
+| Total assertions | 335 | 335 | 335 | 335 |
+| Existing behavior preserved (baseline regression) | 26 / 26 | 26 / 26 | 26 / 26 | 26 / 26 |
+| Grader families fully passing | 1 of 17 | 16 of 17 | 17 of 17 | 1 of 17 |
+
+BLOCKED means a prerequisite failed, so the behavior could not be tested. BLOCKED assertions are not independent candidate failures; they are capabilities the run never reached.
 
 - **Trial 001** kept the existing application working but built only a small part of the promotion system. The evaluator separated real failures from scenarios that could not be reached (BLOCKED) instead of counting everything as a failure.
 - **Trial 002** passed every promotion-economics, stacking, MAP, checkout, concurrency, idempotency, payment-consistency, and historical-integrity grader. The single failure was in the admin API: for one class of malformed identifier, the web framework's default error format was returned instead of the documented error format.
+- **Trial 003** passed all 335 assertions across all 17 grader families, including the admin API error-format check missed in Trial 002.
+- **Trial 004** kept the existing application working, but most promotions could not be created through the documented admin API, and the cart lacked the documented promotion-code entry. Most downstream checks were therefore BLOCKED rather than tested.
 
-Details: [Trial 001 summary](results/TRIAL_001_SUMMARY.md) · [Trial 002 summary](results/TRIAL_002_SUMMARY.md)
+Details: [Trial 001 summary](results/TRIAL_001_SUMMARY.md) · [Trial 002 summary](results/TRIAL_002_SUMMARY.md) · [Trial 003 summary](results/TRIAL_003_SUMMARY.md) · [Trial 004 summary](results/TRIAL_004_SUMMARY.md)
 
 ## What We Learned
 
-**A strong coding agent nearly solved this task.** One frontier model, in a single run, satisfied 334 of 335 held-out checks, including concurrency and payment-consistency checks that are often hard to get right.
+**The strongest candidates tested solved this task.** Two runs from different agents and model families satisfied 334 and 335 of 335 held-out checks, including concurrency and payment-consistency checks that are often hard to get right.
+
+**The evaluation still separates substantially different capability levels.** Every candidate preserved the existing application, but the weaker runs (Trials 001 and 004) built only a small part of the promotion system, while the stronger runs (Trials 002 and 003) built essentially all of it. The same agent produced both a 335-PASS and a 58-PASS result with different models.
 
 That is a useful result, and it changes what to do next:
 
-- It **does not** show that every frontier model would score this well, or that one run is a reliable measure. One trial per model is not a reliability estimate.
-- It **does** suggest that this particular task is approaching saturation for strong agents.
+- It **does not** establish a general model ranking. Four single runs are not a reliability estimate, and a one-assertion difference between Trials 002 and 003 is not evidence of a meaningful capability gap.
+- It **does** suggest that this particular task is saturated for the strongest candidates tested.
 - Making the evaluation harder by adding obscure coupon edge cases would measure trivia, not capability. The better move is to **evaluate a different, harder capability**.
 
 The failure analysis was also a test of the evaluator itself. Before accepting the one Trial 002 failure, I traced it back to the candidate-visible contract to confirm the requirement was fairly stated and that other valid implementations could pass. It was a genuine candidate defect, not a grader bug.
@@ -100,7 +106,7 @@ This project used an **agent-assisted engineering workflow**. I owned the evalua
 
 **AI coding agents implemented**, under that direction, much of the Python in the Northstar environment, the evaluation harness, and the grader families. I reviewed and revised their work, often over several iterations.
 
-The candidate models under test (OpenAI models via Codex) are separate from the development agents used to build the evaluator.
+The candidate models under test (OpenAI models via Codex and Anthropic models via Claude Code) ran as separate trials in isolated workspaces with no access to the evaluator. They are separate from the development-agent sessions used to build the evaluator.
 
 ## Evaluation Methodology
 
@@ -140,7 +146,9 @@ Northstar is fictional and contains only **dev-only, publicly documented credent
 │   └── EVALUATION_ARCHITECTURE.md How trials are created, sealed, and graded
 ├── results/
 │   ├── TRIAL_001_SUMMARY.md      Sanitized Trial 001 results
-│   └── TRIAL_002_SUMMARY.md      Sanitized Trial 002 results
+│   ├── TRIAL_002_SUMMARY.md      Sanitized Trial 002 results
+│   ├── TRIAL_003_SUMMARY.md      Sanitized Trial 003 results
+│   └── TRIAL_004_SUMMARY.md      Sanitized Trial 004 results
 └── examples/
     ├── README.md                 Illustrative only: not held-out material
     └── illustrative_assertion_results.json
@@ -163,7 +171,7 @@ This repository contains the complete candidate-visible task and environment, th
 ## Limitations
 
 - **Small sample.** One trial per model. These results show what happened in each run, not a reliability estimate or a model ranking.
-- **Near saturation.** For the stronger agent tested, this task is close to its ceiling, so it now separates weak agents from strong ones better than it separates strong agents from each other.
+- **Saturation.** For the strongest agents tested, this task is at or near its ceiling, so it now separates weak agents from strong ones better than it separates strong agents from each other.
 - **Outcome-focused.** The scored results measure the final application. Agent trajectories, cost, and token usage were not part of scoring for these trials.
 - **One domain.** This is commerce promotion logic in one Python codebase. Results may not transfer to other domains, languages, or larger repositories.
 - **No published aggregate score.** Results are reported as raw assertion counts and categories. A weighted score was intentionally not finalized.
@@ -190,4 +198,4 @@ The same principles carry forward: candidate-visible requirements, held-out dete
 - **Payments:** FakePay, a separate FastAPI service simulating an external payment processor
 - **Testing:** pytest, with Northstar's own regression suite covering concurrency, idempotency, and fault injection
 - **Evaluation runtime (private):** Docker / Docker Compose, a Python evaluation harness with HTTP clients that behave like browser form submissions
-- **Candidate agents:** Codex with GPT-5.6 Luna and GPT-5.6 Sol High
+- **Candidate agents:** Codex with GPT-5.6 Luna and GPT-5.6 Sol High; Claude Code with Claude Sonnet 5.5 High and Claude Haiku 4.5 High
